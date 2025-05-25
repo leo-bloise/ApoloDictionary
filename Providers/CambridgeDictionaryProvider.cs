@@ -1,5 +1,6 @@
 ﻿using ApoloDictionary.Domain;
 using HtmlAgilityPack;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace ApoloDictionary.Providers
@@ -11,7 +12,7 @@ namespace ApoloDictionary.Providers
         {
             HtmlNode? classification = node.SelectSingleNode(".//div[contains(@class, 'posgram') and contains(@class, 'dpos-g')]");
             ArgumentNullException.ThrowIfNull(classification, nameof(classification));
-            return classification.InnerText;
+            return classification.InnerText.Trim();
         }
         private (string, string) GetDefinition(HtmlNode node)
         {
@@ -21,7 +22,7 @@ namespace ApoloDictionary.Providers
             ArgumentNullException.ThrowIfNull(meaning, nameof(meaning));
             HtmlNode? cefrNode = definitionNode.SelectSingleNode(".//span[@class='def-info ddef-info']");
             ArgumentNullException.ThrowIfNull(cefrNode, nameof(cefrNode));
-            return (Regex.Replace(cefrNode.InnerText, @"\:", ""), Regex.Replace(meaning.InnerText, @"\:", ""));
+            return (Regex.Replace(cefrNode.InnerText, @"\:", "").Trim(), Regex.Replace(meaning.InnerText, @"\:", "").Trim());
         }
         private IEnumerable<string> GetExamples(HtmlNode node)
         {
@@ -29,11 +30,11 @@ namespace ApoloDictionary.Providers
             ArgumentNullException.ThrowIfNull(examplesNodeContainer, nameof(examplesNodeContainer));
             HtmlNodeCollection? examplesNode = examplesNodeContainer.SelectNodes(".//div[@class='examp dexamp']");
             ArgumentNullException.ThrowIfNull(examplesNode, nameof(examplesNode));
-            return examplesNode.Select(exampleNode => exampleNode.InnerText);
+            return examplesNode.Select(exampleNode => exampleNode.InnerText.Trim());
         }
         private HtmlNode GetContent(string text)
         {
-            HtmlDocument? htmlDoc = _htmlWeb.Load($"https://dictionary.cambridge.org/dictionary/english/{text}");
+            HtmlDocument? htmlDoc = _htmlWeb.Load($"https://dictionary.cambridge.org/dictionary/english/{WebUtility.UrlEncode(text)}");
             ArgumentNullException.ThrowIfNull(htmlDoc, nameof(htmlDoc));
 
             HtmlNode? content = htmlDoc.DocumentNode.SelectSingleNode("//article[@id='page-content']");
@@ -44,13 +45,13 @@ namespace ApoloDictionary.Providers
         public WordDefinition Translate(string text)
         {
             HtmlNode content = GetContent(text);
-
             (string cefr, string meaning) = GetDefinition(content);
 
             return new WordDefinition(
                 "Dictionary Cambridge",
+                text,
                 GetClassificationGrammar(content),
-                cefr,
+                cefr.Count() == 0 ? "None": cefr,
                 meaning,
                 GetExamples(content)
             );
