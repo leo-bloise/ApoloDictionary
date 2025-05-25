@@ -20,10 +20,15 @@ namespace ApoloDictionary.Commands
                 ITranslatorProvider provider = new CambridgeDictionaryProvider();
                 try
                 {
-                    WordDefinition definition = provider.Translate(textValue);
-                    Console.WriteLine(definition);
+                    IEnumerable<WordDefinition> definitions = provider.Translate(textValue);
+                    foreach(WordDefinition de in definitions)
+                    {
+                        Console.WriteLine(de);
+                        Console.WriteLine("--------------");
+                    }                    
                 } catch(Exception ex)
                 {
+                    Console.WriteLine(ex);
                     Console.WriteLine($"Provider {provider} could not translate properly {textValue}.");
                 }
             }, _textOption);

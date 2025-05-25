@@ -4,6 +4,6 @@ namespace ApoloDictionary.Providers
 {
     public interface ITranslatorProvider
     {
-        WordDefinition Translate(string text);   
+        IEnumerable<WordDefinition> Translate(string text);   
     }
 }

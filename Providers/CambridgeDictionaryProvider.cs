@@ -14,6 +14,18 @@ namespace ApoloDictionary.Providers
             ArgumentNullException.ThrowIfNull(classification, nameof(classification));
             return classification.InnerText.Trim();
         }
+        private IEnumerable<HtmlNode> GetDefinitions(HtmlNode node)
+        {
+            HtmlNode? senseBody = node.SelectSingleNode(".//div[@class='sense-body dsense_b']");
+            ArgumentNullException.ThrowIfNull(senseBody, nameof(senseBody));
+            IEnumerable<HtmlNode>? definitions = senseBody.SelectNodes(".//div[@class='def-block ddef_block ']");
+            ArgumentNullException.ThrowIfNull(definitions, nameof(definitions));
+            if (definitions.Count() == 0)
+            {
+                throw new ArgumentNullException("No definitions found.");
+            }
+            return definitions;
+        }
         private (string, string) GetDefinition(HtmlNode node)
         {
             HtmlNode? definitionNode = node.SelectSingleNode(".//div[@class='ddef_h']");
@@ -42,19 +54,29 @@ namespace ApoloDictionary.Providers
             ArgumentNullException.ThrowIfNull(content, nameof(content));
             return content;
         }
-        public WordDefinition Translate(string text)
+        public IEnumerable<WordDefinition> Translate(string text)
         {
             HtmlNode content = GetContent(text);
-            (string cefr, string meaning) = GetDefinition(content);
-
-            return new WordDefinition(
-                "Dictionary Cambridge",
-                text,
-                GetClassificationGrammar(content),
-                cefr.Count() == 0 ? "None": cefr,
-                meaning,
-                GetExamples(content)
-            );
+            string classificationGrammar = GetClassificationGrammar(content);
+            IEnumerable<HtmlNode> definitions =  GetDefinitions(content);
+            List<WordDefinition> wordDefinitions = new List<WordDefinition>();
+            foreach(HtmlNode definition in definitions)
+            {
+                (string cefr2, string meaning2) = GetDefinition(definition);                
+                wordDefinitions.Add(new WordDefinition(
+                    "Dictionary Cambridge",
+                    text,
+                    classificationGrammar,
+                    cefr2.Count() == 0 ? "None": cefr2,
+                    meaning2,
+                    GetExamples(definition)
+                ));
+            }
+            if (wordDefinitions.Count() == 0)
+            {
+                throw new ArgumentNullException("No definitions found.");
+            }
+            return wordDefinitions.AsEnumerable();
         }
         public override string ToString()
         {
