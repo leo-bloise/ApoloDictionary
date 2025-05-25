@@ -1,0 +1,63 @@
+﻿using ApoloDictionary.Domain;
+using HtmlAgilityPack;
+using System.Text.RegularExpressions;
+
+namespace ApoloDictionary.Providers
+{
+    public class CambridgeDictionaryProvider : ITranslatorProvider
+    {
+        private HtmlWeb _htmlWeb = new HtmlWeb();
+        private string GetClassificationGrammar(HtmlNode node)
+        {
+            HtmlNode? classification = node.SelectSingleNode(".//div[contains(@class, 'posgram') and contains(@class, 'dpos-g')]");
+            ArgumentNullException.ThrowIfNull(classification, nameof(classification));
+            return classification.InnerText;
+        }
+        private (string, string) GetDefinition(HtmlNode node)
+        {
+            HtmlNode? definitionNode = node.SelectSingleNode(".//div[@class='ddef_h']");
+            ArgumentNullException.ThrowIfNull(definitionNode, nameof(definitionNode));
+            HtmlNode? meaning = definitionNode.SelectSingleNode(".//div[@class='def ddef_d db']");
+            ArgumentNullException.ThrowIfNull(meaning, nameof(meaning));
+            HtmlNode? cefrNode = definitionNode.SelectSingleNode(".//span[@class='def-info ddef-info']");
+            ArgumentNullException.ThrowIfNull(cefrNode, nameof(cefrNode));
+            return (Regex.Replace(cefrNode.InnerText, @"\:", ""), Regex.Replace(meaning.InnerText, @"\:", ""));
+        }
+        private IEnumerable<string> GetExamples(HtmlNode node)
+        {
+            HtmlNode? examplesNodeContainer = node.SelectSingleNode(".//div[@class='def-body ddef_b']");
+            ArgumentNullException.ThrowIfNull(examplesNodeContainer, nameof(examplesNodeContainer));
+            HtmlNodeCollection? examplesNode = examplesNodeContainer.SelectNodes(".//div[@class='examp dexamp']");
+            ArgumentNullException.ThrowIfNull(examplesNode, nameof(examplesNode));
+            return examplesNode.Select(exampleNode => exampleNode.InnerText);
+        }
+        private HtmlNode GetContent(string text)
+        {
+            HtmlDocument? htmlDoc = _htmlWeb.Load($"https://dictionary.cambridge.org/dictionary/english/{text}");
+            ArgumentNullException.ThrowIfNull(htmlDoc, nameof(htmlDoc));
+
+            HtmlNode? content = htmlDoc.DocumentNode.SelectSingleNode("//article[@id='page-content']");
+
+            ArgumentNullException.ThrowIfNull(content, nameof(content));
+            return content;
+        }
+        public WordDefinition Translate(string text)
+        {
+            HtmlNode content = GetContent(text);
+
+            (string cefr, string meaning) = GetDefinition(content);
+
+            return new WordDefinition(
+                "Dictionary Cambridge",
+                GetClassificationGrammar(content),
+                cefr,
+                meaning,
+                GetExamples(content)
+            );
+        }
+        public override string ToString()
+        {
+            return "Cambridge Dictionary Provider";
+        }
+    }
+}
