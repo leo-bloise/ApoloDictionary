@@ -6,10 +6,10 @@ on:
             -  'v*'
 jobs:
     build-linux:
-        uses: .github/workflows/generate_linux_build.yaml@master
+        uses: ./.github/workflows/generate_linux_build.yaml@master
         secrets: inherit
     build-windows:
-        uses: .github/workflows/generate_windows_build.yaml@master
+        uses: ./.github/workflows/generate_windows_build.yaml@master
         secrets: inherit
     create-release:
         runs-on: ubuntu-latest
