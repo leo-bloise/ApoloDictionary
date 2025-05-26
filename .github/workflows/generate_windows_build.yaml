@@ -1,7 +1,7 @@
 name: Generate Windows Build
 run-name: Generate Windows Build for ApoloDictionary
 on:
-    workflow_dispatch:
+    workflow_call:
 jobs:
     Generate-Artifcats:
         runs-on: windows-latest
