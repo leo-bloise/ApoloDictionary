@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text;
 using System.Text.Json;
 
 namespace ApoloDictionary.Domain
@@ -29,6 +30,24 @@ namespace ApoloDictionary.Domain
             {
                 Directory.CreateDirectory(_cacheFilePath);
             }
+        }
+        public void DeleteCache()
+        {
+            if (Directory.Exists(_cacheFilePath))
+            {
+                Directory.Delete(_cacheFilePath, true);
+            }
+            LoadCache();
+        }
+        public string GetCacheBasicInfo()
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo(_cacheFilePath);
+            directoryInfo.Refresh();
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine($"Cache Path: {directoryInfo.FullName}");
+            stringBuilder.AppendLine($"Cache Size: {directoryInfo.EnumerateFiles().Sum(file => file.Length) / 1024} KB - {directoryInfo.EnumerateFiles().Count()} File(s)");
+            return stringBuilder.ToString();
+            
         }
         public IEnumerable<WordDefinition>? GetFromCache(string key)
         {
