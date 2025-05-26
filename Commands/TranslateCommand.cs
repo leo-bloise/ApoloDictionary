@@ -28,7 +28,6 @@ namespace ApoloDictionary.Commands
                     }                    
                 } catch(Exception ex)
                 {
-                    Console.WriteLine(ex);
                     Console.WriteLine($"Provider {provider} could not translate properly {textValue}.");
                 }
             }, _textOption);
