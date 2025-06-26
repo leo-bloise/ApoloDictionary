@@ -1,5 +1,11 @@
 ﻿# 📝 Apolo Dictionary
-Apolo Dictionary is a simple and fast dictionary application that allows you to search for words and their meanings. It is built using C# and the System.CommandLine library for CLI arguments and options parsing. It also uses webscraping to fetch definitions from the web.
+Apolo Dictionary is a simple and fast dictionary application that allows you to search for words and their meanings. It was built using C# and the System.CommandLine library for CLI arguments and options parsing. It also uses webscraping to fetch definitions from the web.
+
+
+
+https://github.com/user-attachments/assets/c018db52-80b4-472f-b63a-e9595edb1ce0
+
+
 
 ## 🌐 Current Web Scraping Sources
 - [Dictionary Cambridge](https://dictionary.cambridge.org)
